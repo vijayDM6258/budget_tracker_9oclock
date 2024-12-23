@@ -1,0 +1,30 @@
+INSERT INTO <tableName> (<Filedname,Filedname..>) VALUES (<value/data,....>)
+UPDATE  <tableName> SET <Filedname>=<data> WHERE id=3
+
+
+CREATE TABLE "category" (
+	"name"	TEXT,
+	"isExpense"	TEXT,
+	"id"	INTEGER UNIQUE,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
+
+CRUD
+
+INSERT INTO category ("name","isExpense") VALUES ("cat2","income")
+UPDATE category SET "name"="cate" WHERE id=3
+DELETE FROM category WHERE id = 4
+SELECT * from category
+
+
+CREATE TABLE "IncomeExpense" (
+	"ID"	INTEGER UNIQUE,
+	"name"	TEXT,
+	"date"	TEXT,
+	"amount"	REAL,
+	"category_name"	TEXT,
+	"isExpense"	TEXT,
+	PRIMARY KEY("ID" AUTOINCREMENT)
+);
+
+INSERT INTO IncomeExpense ("name","date","amount","isExpense","category_name") VALUES ("cat2","10-12-24",200,"movie","Expense")
