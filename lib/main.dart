@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await DbHelper().initDb();
+  await DbHelper.dbHelper.initDb();
   runApp(MyApp());
 }
 
