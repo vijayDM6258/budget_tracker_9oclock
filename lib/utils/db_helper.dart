@@ -8,6 +8,7 @@ class DbHelper {
 
   late Database db;
   String categoryTable = "category";
+  String incomeExpenseTable = "IncomeExpense";
 
   Future<void> initDb() async {
     String dbPath = await getDatabasesPath();
@@ -17,7 +18,7 @@ class DbHelper {
       onCreate: (db, version) async {
         await db.execute('CREATE TABLE $categoryTable (name	TEXT, isExpense	TEXT,img TEXT,id	INTEGER UNIQUE)');
         await db.execute(
-            'CREATE TABLE "IncomeExpense" ("ID"	INTEGER UNIQUE,"name"	TEXT,"date"	TEXT,"amount"	REAL,"category_name"	TEXT,"isExpense"	TEXT,PRIMARY KEY("ID" AUTOINCREMENT))');
+            'CREATE TABLE $incomeExpenseTable" ("ID"	INTEGER UNIQUE,"name"	TEXT,"date"	TEXT,"amount"	REAL,"category_name"	TEXT,"isExpense"	TEXT,PRIMARY KEY("ID" AUTOINCREMENT))');
       },
     );
   }
@@ -30,8 +31,17 @@ class DbHelper {
     });
   }
 
-  Future<void> addIncomeExpenseToDb() async {
-    await db.insert("", {});
+  Future<void> addIncomeExpenseToDb(String name, double amt, String catName, String isExpense) async {
+    await db.insert(
+      incomeExpenseTable,
+      {
+        "name": name,
+        "date": DateTime.now().toString(),
+        "amount": amt,
+        "category_name": catName,
+        "isExpense": isExpense,
+      },
+    );
   }
 
   Future<List<Map<String, Object?>>> getCategoryFromDb() async {
@@ -39,7 +49,10 @@ class DbHelper {
     return catList;
   }
 
-  Future<void> getIncomeExpenseFromDb() async {}
+  Future<List<Map<String, Object?>>> getIncomeExpenseFromDb(String isExpense) async {
+    List<Map<String, Object?>> ixl = await db.query(incomeExpenseTable, where: "isExpense = ?", whereArgs: [isExpense]);
+    return ixl;
+  }
 
   Future<void> delete() async {}
 
