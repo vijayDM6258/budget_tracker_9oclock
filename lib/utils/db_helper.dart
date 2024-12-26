@@ -1,3 +1,5 @@
+import 'package:budget_tracker/model/IncomeExpenseModel.dart';
+import 'package:budget_tracker/model/category_model.dart';
 import 'package:get/get.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -31,6 +33,10 @@ class DbHelper {
     });
   }
 
+  Future<void> addCategoryWithModel(CategoryModel categoryModel) async {
+    await db.insert(categoryTable, categoryModel.toJson());
+  }
+
   Future<void> addIncomeExpenseToDb(String name, double amt, String catName, String isExpense) async {
     await db.insert(
       incomeExpenseTable,
@@ -42,6 +48,10 @@ class DbHelper {
         "isExpense": isExpense,
       },
     );
+  }
+
+  Future<void> addIncomeExpenseWithModel(IncomeExpenseModel model) async {
+    await db.insert(incomeExpenseTable, model.toJson());
   }
 
   Future<List<Map<String, Object?>>> getCategoryFromDb() async {

@@ -1,3 +1,4 @@
+import 'package:budget_tracker/model/category_model.dart';
 import 'package:budget_tracker/utils/db_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
@@ -23,10 +24,17 @@ class AddIXController extends GetxController {
   }
 
   void addCategory() async {
-    String catName = categoryName.text;
-    String expense = isExpense.value;
-    String catImg = selectedCat.value;
-    await DbHelper.dbHelper.addCategoryToDb(catName, expense, catImg);
+    // String catName = categoryName.text;
+    // String expense = isExpense.value;
+    // String catImg = selectedCat.value;
+    // await DbHelper.dbHelper.addCategoryToDb(catName, expense, catImg);
+
+    await DbHelper.dbHelper.addCategoryWithModel(CategoryModel(
+      name: categoryName.text,
+      img: selectedCat.value,
+      isExpense: isExpense.value,
+    ));
+
     print("addCategory Success");
   }
 }

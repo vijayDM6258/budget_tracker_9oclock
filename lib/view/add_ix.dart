@@ -25,6 +25,11 @@ class AddIX extends StatelessWidget {
                     return DropdownMenuEntry(
                       value: index,
                       label: "${map["name"]}",
+                      leadingIcon: Image.asset(
+                        "${map["img"]}",
+                        height: 20,
+                        width: 20,
+                      ),
                     );
                   }),
                   onSelected: (value) {
