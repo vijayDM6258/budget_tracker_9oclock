@@ -24,6 +24,7 @@ class HomeController extends GetxController {
   TextEditingController txtName = TextEditingController();
   TextEditingController txtDate = TextEditingController();
   DateTime? selectDate;
+
   @override
   void onInit() {
     super.onInit();
@@ -36,18 +37,21 @@ class HomeController extends GetxController {
     incomeList.value = ixl;
   }
 
+  Future<void> getIncomeDataWithSearch(String search) async {
+    if (search.isEmpty) {
+      getIncomeData();
+    } else {
+      List<Map<String, Object?>> ixl = await DbHelper.dbHelper.getIncomeSearchData(search);
+      incomeList.value = ixl;
+    }
+  }
+
   Future<void> getExpenseData() async {
     List<Map<String, Object?>> ixl = await DbHelper.dbHelper.getIncomeExpenseFromDb("Expense");
     expenseList.value = ixl;
   }
 
   Future<void> addIncome() async {
-    // String name = txtName.text;
-    // double amount = double.tryParse(txtAmount.text) ?? 0;
-    // String catName = "${selectedCategory.value["name"]}";
-    // String isExpense = bottomNavIndex == 0 ? "Income" : "Expense";
-    // await DbHelper.dbHelper.addIncomeExpenseToDb(name, amount, catName, isExpense);
-
     await DbHelper.dbHelper.addIncomeExpenseWithModel(IncomeExpenseModel(
       isExpense: bottomNavIndex == 0 ? "Income" : "Expense",
       name: txtName.text,
@@ -59,5 +63,27 @@ class HomeController extends GetxController {
     getIncomeData();
     getExpenseData();
     print("Added");
+  }
+
+  Future<void> editIncome(int editId) async {
+    await DbHelper.dbHelper.updateIncomeExpense(
+        IncomeExpenseModel(
+          isExpense: bottomNavIndex == 0 ? "Income" : "Expense",
+          name: txtName.text,
+          amount: double.tryParse(txtAmount.text) ?? 0,
+          categoryName: "${selectedCategory.value["name"]}",
+          date: selectDate?.toString() ?? "",
+        ),
+        editId);
+
+    getIncomeData();
+    getExpenseData();
+    print("Added");
+  }
+
+  Future<void> deleteItem(int id) async {
+    await DbHelper.dbHelper.deleteIncomeExpense(id);
+    getIncomeData();
+    getExpenseData();
   }
 }

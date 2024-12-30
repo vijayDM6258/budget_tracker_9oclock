@@ -4,6 +4,7 @@ import 'package:budget_tracker/model/income_expense.dart';
 import 'package:budget_tracker/utils/db_helper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
@@ -25,20 +26,69 @@ class HomeScreen extends StatelessWidget {
         },
         children: [
           Obx(() {
-            return ListView.builder(
-              itemCount: controller.incomeList.length,
-              itemBuilder: (context, index) {
-                IncomeExpenseModel ix = IncomeExpenseModel.fromJson(controller.incomeList[index]);
-                return ListTile(
-                  title: Text(ix.name ?? ""),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text("${ix.amount}"),
-                      Text(ix.categoryName ?? ""),
-                    ],
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextFormField(
+                    decoration: InputDecoration(hintText: "Search"),
+                    onChanged: (value) {
+                      controller.getIncomeDataWithSearch(value);
+                      print("object $value");
+                    },
                   ),
+                ),
+                if (controller.incomeList.isEmpty) Text("No Data Found"),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: controller.incomeList.length,
+                    itemBuilder: (context, index) {
+                      int id = int.tryParse("${controller.incomeList[index]["ID"]}") ?? 0;
+                      IncomeExpenseModel ix = IncomeExpenseModel.fromJson(controller.incomeList[index]);
+
+                      return ListTile(
+                        title: Text(ix.name ?? ""),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text("${ix.amount}"),
+                            Text(ix.categoryName ?? ""),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.edit),
+                              onPressed: () {
+                                showMyDialog(context, name: ix.name, amt: ix.amount, cat: ix.categoryName, date: ix.date, id: id);
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: () {
+                                controller.deleteItem(id);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          }),
+          Obx(() {
+            return ListView.builder(
+              itemCount: controller.expenseList.length,
+              itemBuilder: (context, index) {
+                Map<String, Object?> incomeItem = controller.expenseList[index];
+                int id = int.tryParse("${controller.expenseList[index]["ID"]}") ?? 0;
+                return ListTile(
+                  title: Text("${incomeItem["name"]}"),
+                  subtitle: Text("${incomeItem["category_name"]} , ${incomeItem["isExpense"]}"),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -48,23 +98,12 @@ class HomeScreen extends StatelessWidget {
                       ),
                       IconButton(
                         icon: Icon(Icons.delete),
-                        onPressed: () {},
+                        onPressed: () {
+                          controller.deleteItem(id);
+                        },
                       ),
                     ],
                   ),
-                );
-              },
-            );
-          }),
-          Obx(() {
-            return ListView.builder(
-              itemCount: controller.expenseList.length,
-              itemBuilder: (context, index) {
-                Map<String, Object?> incomeItem = controller.expenseList[index];
-                return ListTile(
-                  title: Text("${incomeItem["name"]}"),
-                  subtitle: Text("${incomeItem["category_name"]} , ${incomeItem["isExpense"]}"),
-                  trailing: Text("${incomeItem["amount"]}"),
                 );
               },
             );
@@ -111,7 +150,11 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  void showMyDialog(BuildContext context) {
+  void showMyDialog(BuildContext context, {String? name, String? date, num? amt, String? cat, int? id}) {
+    controller.txtName.text = name ?? "";
+    controller.txtAmount.text = "${amt ?? ""}";
+    controller.txtDate.text = date ?? "";
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -176,6 +219,15 @@ class HomeScreen extends StatelessWidget {
             FutureBuilder(
               future: DbHelper.dbHelper.getCategoryFromDb(),
               builder: (context, snapshot) {
+                print("FutureBuilder");
+                if (snapshot.data?.isNotEmpty ?? false) {
+                  List<Map<String, Object?>>? selectImg = snapshot.data?.where((element) => element["name"] == cat).toList();
+                  if (selectImg?.isNotEmpty ?? false) {
+                    controller.selectedCategory.value = selectImg!.first;
+                    print("selectImg $selectImg");
+                  }
+                }
+
                 return Obx(() {
                   return DropdownMenu(
                     dropdownMenuEntries: (snapshot.data ?? []).map(
@@ -190,6 +242,8 @@ class HomeScreen extends StatelessWidget {
                             ));
                       },
                     ).toList(),
+                    // initialSelection: snapshot.data?[3],
+                    controller: TextEditingController(text: cat ?? ""),
                     expandedInsets: EdgeInsets.all(10),
                     leadingIcon: Image.asset(
                       "${controller.selectedCategory.value["img"]}",
@@ -226,7 +280,12 @@ class HomeScreen extends StatelessWidget {
           ),
           ElevatedButton(
             onPressed: () async {
-              await controller.addIncome();
+              if (name != null) {
+                await controller.editIncome(id!);
+              } else {
+                await controller.addIncome();
+              }
+
               Get.back();
             },
             style: ElevatedButton.styleFrom(
@@ -237,8 +296,8 @@ class HomeScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
-            child: const Text(
-              'Add',
+            child: Text(
+              name != null ? 'Edit' : "Add",
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15, letterSpacing: .75),
             ), // Button ka text
           ),

@@ -64,7 +64,17 @@ class DbHelper {
     return ixl;
   }
 
-  Future<void> delete() async {}
+  Future<List<Map<String, Object?>>> getIncomeSearchData(String search) async {
+    List<Map<String, Object?>> ixl =
+        await db.query(incomeExpenseTable, where: "isExpense = ? and name Like ? or category_name Like ?", whereArgs: ["Income", "%$search%", "%$search%"]);
+    return ixl;
+  }
 
-  Future<void> update() async {}
+  Future<void> deleteIncomeExpense(int id) async {
+    await db.delete(incomeExpenseTable, where: "ID = ?", whereArgs: [id]);
+  }
+
+  Future<void> updateIncomeExpense(IncomeExpenseModel model, int id) async {
+    await db.update(incomeExpenseTable, model.toJson(), where: "ID = ?", whereArgs: [id]);
+  }
 }
